@@ -1,0 +1,183 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum PaymentMethods {
+  CREDIT_CARD
+  DEBIT_CARD
+  PIX
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  CANCELED
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  name      String?
+  password  String
+  role      Role     @default(USER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  Wishlist Wishlist[]
+  Orders   Orders[]
+  Reviews  Reviews[]
+
+  Cart    Cart[]
+  Address Address[]
+}
+
+model Products {
+  id          Int      @id @default(autoincrement())
+  name        String
+  price       Float
+  description String
+  image_url   String   @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  categories Categories[] @relation("ProductCategories")
+  Stock      Stock[]
+  Wishlist   Wishlist[]
+  OrderItems OrderItems[]
+  Reviews    Reviews[]
+
+  Cart Cart[]
+}
+
+model Categories {
+  id        Int      @id @default(autoincrement())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  products Products[] @relation("ProductCategories")
+}
+
+model Stock {
+  id              Int      @id @default(autoincrement())
+  quantity        Int
+  product_id      Int
+  threshold_alert String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  product Products @relation(fields: [product_id], references: [id])
+}
+
+model Wishlist {
+  id         Int      @id @default(autoincrement())
+  product_id Int
+  user_id    Int
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  product Products @relation(fields: [product_id], references: [id])
+  user    User     @relation(fields: [user_id], references: [id])
+}
+
+model Orders {
+  id            Int      @id @default(autoincrement())
+  user_id       Int
+  total_price   Float
+  status        String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  tracking_code String?
+  address       String
+
+  user       User         @relation(fields: [user_id], references: [id])
+  OrderItems OrderItems[]
+  Payments   Payments[]
+}
+
+model OrderItems {
+  id         Int      @id @default(autoincrement())
+  order_id   Int
+  product_id Int
+  quantity   Int
+  createdAt  DateTime @default(now())
+
+  order   Orders   @relation(fields: [order_id], references: [id])
+  product Products @relation(fields: [product_id], references: [id])
+}
+
+model Reviews {
+  id         Int      @id @default(autoincrement())
+  product_id Int
+  user_id    Int
+  title      String?
+  rating     Int      @default(0)
+  comment    String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  product Products @relation(fields: [product_id], references: [id])
+  user    User     @relation(fields: [user_id], references: [id])
+}
+
+model Coupons {
+  id          Int      @id @default(autoincrement())
+  code        String   @unique
+  discount    Float
+  valid_until DateTime
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Cart {
+  id         Int      @id @default(autoincrement())
+  user_id    Int
+  product_id Int
+  quantity   Int
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  user    User     @relation(fields: [user_id], references: [id])
+  product Products @relation(fields: [product_id], references: [id])
+}
+
+model Address {
+  id        Int      @id @default(autoincrement())
+  user_id   Int
+  street    String
+  city      String
+  state     String
+  zip_code  String
+  country   String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [user_id], references: [id])
+}
+
+model Payments {
+  id             Int            @id @default(autoincrement())
+  order_id       Int
+  payment_method PaymentMethods
+  amount         Float
+  status         PaymentStatus  @default(PENDING)
+  transaction_id String?
+  createdAt      DateTime       @default(now())
+
+  order Orders @relation(fields: [order_id], references: [id])
+}
