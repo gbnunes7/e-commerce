@@ -1,9 +1,9 @@
-import app from "./app";
-import { CONFIG } from "@/config/envConfig";
-import { setupRoutes } from "./routes";
+import app from './app'
+import { CONFIG } from '@/config/envConfig'
+import { setupRoutes } from './routes'
 
-setupRoutes(app);
+setupRoutes(app)
 
 app.listen(CONFIG.PORT, () => {
-  console.log(`Server is running on ${CONFIG.PORT}`);
-});
+  console.log(`Server is running on ${CONFIG.PORT}`)
+})

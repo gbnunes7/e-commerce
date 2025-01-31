@@ -1,8 +1,8 @@
-import { User } from "@prisma/client";
-import { createUserDto } from "../DTO";
+import { User } from '@prisma/client'
+import { createUserDto } from '../DTO'
 
 export interface IAuthRepository {
-  findByEmail(email: string): Promise<User | null>;
+  findByEmail(email: string): Promise<User | null>
 
-  createUser(user: createUserDto): Promise<createUserDto>;
+  createUser(user: createUserDto): Promise<createUserDto>
 }
