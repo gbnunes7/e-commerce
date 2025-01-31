@@ -1,15 +1,14 @@
-import { AuthRepository } from "../repository";
-import { createUserDto, loginDto } from "../DTO";
-import { UserAlreadyExistsError } from "../errors/user-already-exists-error";
-import * as bcrypt from "bcrypt";
-import { InvalidCredentialsError } from "../errors/invalid-credentials-error";
-import { IAuthRepository } from "../interface";
+import { createUserDto, loginDto } from '../DTO'
+import { UserAlreadyExistsError } from '../errors/user-already-exists-error'
+import * as bcrypt from 'bcrypt'
+import { InvalidCredentialsError } from '../errors/invalid-credentials-error'
+import { IAuthRepository } from '../interface'
 
 class AuthUseCases {
-  private authRepository: IAuthRepository;
+  private authRepository: IAuthRepository
 
   constructor(authRepository: IAuthRepository) {
-    this.authRepository = authRepository;
+    this.authRepository = authRepository
   }
 
   async createUser({
@@ -18,42 +17,41 @@ class AuthUseCases {
     password,
     role,
   }: createUserDto): Promise<createUserDto> {
-    const existingUser = await this.authRepository.findByEmail(email);
+    const existingUser = await this.authRepository.findByEmail(email)
 
     if (existingUser) {
-      throw new UserAlreadyExistsError();
+      throw new UserAlreadyExistsError()
     }
 
-    const passwordHash = await bcrypt.hash(password, 10);
+    const passwordHash = await bcrypt.hash(password, 10)
 
     const user = await this.authRepository.createUser({
       email,
       name,
       password: passwordHash,
       role,
-    });
+    })
 
-    return user;
+    return user
   }
 
   async login({ email, password }: loginDto) {
-    const user = await this.authRepository.findByEmail(email);
+    const user = await this.authRepository.findByEmail(email)
 
     if (!user) {
-      throw new InvalidCredentialsError();
+      throw new InvalidCredentialsError()
     }
 
-    const passwordMatch = await bcrypt.compare(password, user.password);
+    const passwordMatch = await bcrypt.compare(password, user.password)
 
     if (!passwordMatch) {
-      throw new InvalidCredentialsError();
+      throw new InvalidCredentialsError()
     }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password: _, ...userWithoutPassword } = user
 
-    const { password: _, ...userWithoutPassword } = user;
-
-    return userWithoutPassword;
+    return userWithoutPassword
   }
-
 }
 
-export { AuthUseCases };
+export { AuthUseCases }
