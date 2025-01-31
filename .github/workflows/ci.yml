@@ -23,5 +23,5 @@ jobs:
       working-directory: ./backend
 
     - name: Run lint script with eslint
-      run: npm run eslint 
+      run: npm run lint 
       working-directory: ./backend
