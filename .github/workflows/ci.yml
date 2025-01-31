@@ -20,6 +20,8 @@ jobs:
 
     - name: Install dependencies
       run: npm install
+      working-directory: ./backend
 
     - name: Run lint script with eslint
       run: npm run eslint . --ext .js,.ts
+      working-directory: ./backend
