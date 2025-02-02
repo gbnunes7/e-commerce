@@ -18,6 +18,7 @@ class AuthController {
     this.authUseCases = authUseCases
     this.createUser = this.createUser.bind(this)
     this.login = this.login.bind(this)
+    this.refreshToken = this.refreshToken.bind(this)
   }
 
   async createUser(req: Request, res: Response, next: NextFunction) {
@@ -67,13 +68,57 @@ class AuthController {
 
       const user = await this.authUseCases.login({ email, password })
 
-      const token = jwt.sign({ email: user.id }, CONFIG.JWT_SECRET)
+      const token = jwt.sign({ id: user.id }, CONFIG.JWT_SECRET, {
+        expiresIn: '1h',
+      })
+
+      const refreshToken = jwt.sign({ id: user.id }, CONFIG.JWT_SECRET, {
+        expiresIn: '7d',
+      })
+
+      res.cookie('refreshToken', refreshToken, {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'strict',
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      })
 
       res.status(200).json({ user, token })
     } catch (error: unknown) {
       if (error instanceof InvalidCredentialsError) {
         res.status(401).json({ message: error.message })
         return
+      }
+
+      next(error)
+    }
+  }
+
+  async refreshToken(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { refreshToken } = req.cookies
+
+      if (!refreshToken) {
+        return res.status(401).json({ message: 'Refresh token not found.' })
+      }
+
+      const decoded = jwt.verify(refreshToken, CONFIG.JWT_SECRET) as {
+        id: string
+      }
+
+      const newAccessToken = jwt.sign({ id: decoded.id }, CONFIG.JWT_SECRET, {
+        expiresIn: '1h',
+      })
+
+      res.status(200).json({ accessToken: newAccessToken })
+    } catch (error: unknown) {
+      if (error instanceof jwt.TokenExpiredError) {
+        res.status(401).json({ message: 'Refresh token expired.' })
+        return
+      }
+
+      if (error instanceof jwt.JsonWebTokenError) {
+        res.status(401).json({ message: 'Refresh token invalid.' })
       }
 
       next(error)
