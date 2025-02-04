@@ -1,31 +1,27 @@
 import { CONFIG } from '@/config/envConfig'
 import { User } from '@prisma/client'
-import { NextFunction, Request, Response } from 'express'
+import { Request, Response, NextFunction } from 'express'
 import jwt from 'jsonwebtoken'
 
-const authMiddleware = async (
+export const authMiddleware = (
   req: Request,
   res: Response,
   next: NextFunction,
 ) => {
-  const token = req.header('Authorization')
+  const authHeader = req.headers.authorization
 
-  if (!token) {
-    res
-      .status(401)
-      .json({ message: 'Acesso negado, token de verificação não fornecido' })
-    return
-  }
+  if (authHeader) {
+    const token = authHeader.split(' ')[1]
 
-  try {
-    const decoded = jwt.verify(token, CONFIG.JWT_SECRET)
+    jwt.verify(token, CONFIG.JWT_SECRET, (err, user) => {
+      if (err) {
+        return res.sendStatus(403)
+      }
 
-    req.user = decoded as User
-
-    next()
-  } catch (error) {
-    res.status(400).json({ message: 'Token inválido' })
+      req.user = user as User
+      next()
+    })
+  } else {
+    res.sendStatus(401)
   }
 }
-
-export default authMiddleware
