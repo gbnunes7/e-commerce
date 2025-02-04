@@ -68,9 +68,13 @@ class AuthController {
 
       const user = await this.authUseCases.login({ email, password })
 
-      const token = jwt.sign({ id: user.id }, CONFIG.JWT_SECRET, {
-        expiresIn: '1h',
-      })
+      const token = jwt.sign(
+        { id: user.id, role: user.role },
+        CONFIG.JWT_SECRET,
+        {
+          expiresIn: '1h',
+        },
+      )
 
       const refreshToken = jwt.sign({ id: user.id }, CONFIG.JWT_SECRET, {
         expiresIn: '7d',
