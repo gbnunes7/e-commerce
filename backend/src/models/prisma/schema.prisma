@@ -18,6 +18,11 @@ enum Role {
   ADMIN
 }
 
+enum Operation {
+  ADD
+  SUBTRACT
+}
+
 enum PaymentMethods {
   CREDIT_CARD
   DEBIT_CARD
@@ -75,12 +80,12 @@ model Categories {
 }
 
 model Stock {
-  id              Int      @id @default(autoincrement())
-  quantity        Int
-  product_id      Int
-  threshold_alert String
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id         Int       @id @default(autoincrement())
+  quantity   Int
+  product_id Int
+  operation  Operation?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
 
   product Products @relation(fields: [product_id], references: [id])
 }
