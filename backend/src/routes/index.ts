@@ -8,6 +8,7 @@ import { authMiddleware } from '@/middlewares/auth-middleware'
 import categoriesRoutes from '@/modules/categories/routes'
 import productsRoutes from '@/modules/products/routes'
 import stocksRoutes from '@/modules/stock/routes'
+import orderRoutes from '@/modules/orders/routes'
 
 const setupRoutes = (app: Express) => {
   app.use(express.json())
@@ -22,6 +23,7 @@ const setupRoutes = (app: Express) => {
   app.use(categoriesRoutes)
   app.use(productsRoutes)
   app.use(stocksRoutes)
+  app.use(orderRoutes)
 
   app.use(zodErrorHandler)
 }
